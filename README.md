@@ -20,7 +20,10 @@ availability_zones = ["us-east-1a", "us-east-1b", "us-east-1c"]
 ```
 
 ### Step 4
-Configure your AWS Profile using the command ' aws configure --profile=<profile_name>'
+Configure your AWS Profile using the command 
+```
+aws configure --profile=<profile_name>
+```
 Enter the following when prompted:
 ```
 AWS Access Key ID [None]: <access_key>
