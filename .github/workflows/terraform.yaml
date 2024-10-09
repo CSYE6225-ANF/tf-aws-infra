@@ -1,0 +1,44 @@
+# This workflow runs Terraform validation on pull requests to the main branch
+
+name: Terraform CI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on pull request events but only for the "main" branch
+  # push:
+  #   branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  # workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This job is responsible for validating the Terraform configuration
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Step 1: Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v4
+
+      # Step 2: Set up Terraform CLI on the runner
+      - uses: hashicorp/setup-terraform@v3
+
+      # Step 3: Run Terraform fmt to ensure the code is formatted properly
+      - name: Terraform fmt
+        id: fmt
+        run: terraform fmt
+
+      # Step 4: Initialize Terraform (downloads providers and prepares working directory)
+      - name: Terraform Init
+        id: init
+        run: terraform init
+
+      # Step 5: Validate the Terraform configuration
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate
