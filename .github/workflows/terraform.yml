@@ -1,6 +1,6 @@
 # This workflow runs Terraform validation on pull requests to the main branch
 
-name: Terraform CI
+name: Terraform_CI
 
 # Controls when the workflow will run
 on:
