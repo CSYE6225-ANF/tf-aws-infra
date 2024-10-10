@@ -17,6 +17,7 @@ on:
 jobs:
   # This job is responsible for validating the Terraform configuration
   build:
+    name: terraform validate
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
@@ -31,7 +32,7 @@ jobs:
       # Step 3: Run Terraform fmt to ensure the code is formatted properly
       - name: Terraform fmt
         id: fmt
-        run: terraform fmt
+        run: terraform fmt -check
 
       # Step 4: Initialize Terraform (downloads providers and prepares working directory)
       - name: Terraform Init
