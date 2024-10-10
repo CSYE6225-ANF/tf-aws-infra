@@ -33,18 +33,18 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.9.7
+      
+      # Step 4: Initialize Terraform (downloads providers and prepares working directory)
+      - name: Terraform init
+        id: init
+        run: terraform init
 
       # Step 3: Run Terraform fmt to ensure the code is formatted properly
       - name: Terraform fmt
         id: fmt
-        run: terraform fmt -check
-
-      # Step 4: Initialize Terraform (downloads providers and prepares working directory)
-      - name: Terraform Init
-        id: init
-        run: terraform init
+        run: terraform fmt -check -recursive
 
       # Step 5: Validate the Terraform configuration
-      - name: Terraform Validate
+      - name: Terraform validate
         id: validate
         run: terraform validate
