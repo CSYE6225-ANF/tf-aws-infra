@@ -10,7 +10,7 @@ resource "aws_instance" "web_app_instance" {
     delete_on_termination = true
   }
 
-  disable_api_termination = false  # Allows termination via API
+  disable_api_termination = false # Allows termination via API
 
   tags = {
     Name = "web-app-instance"
