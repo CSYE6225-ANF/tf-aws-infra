@@ -27,3 +27,19 @@ variable "availability_zones" {
   type        = list(string)
   default     = ["us-east-1a", "us-east-1b", "us-east-1c"]
 }
+
+variable "application_port" {
+  description = "Port on which the application runs"
+  type        = number
+  default     = 8080
+}
+
+variable "custom_ami_id" {
+  description = "Custom AMI ID for the EC2 instance"
+  type        = string
+}
+
+variable "instance_type" {
+  description = "Instance type"
+  default     = "t2.medium"
+}
