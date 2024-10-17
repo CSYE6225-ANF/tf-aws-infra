@@ -43,3 +43,9 @@ variable "instance_type" {
   description = "Instance type"
   default     = "t2.medium"
 }
+
+variable "key_pair_name" {
+  description = "The name of the key pair to access the EC2 instance"
+  type        = string
+  default     = "keypair"
+}
