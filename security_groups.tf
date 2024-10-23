@@ -46,16 +46,27 @@ resource "aws_security_group" "application_sg" {
   }
 }
 
-data "aws_ami" "custom_ami" {
-  most_recent = true
-  owners      = ["self"]
-  filter {
-    name   = "name"
-    values = ["csye6225_webapp*"]
+resource "aws_security_group" "db_security_group" {
+  vpc_id = aws_vpc.csye6225_vpc.id
+  name   = "db-security-group"
+
+  # Ingress rule to allow traffic from EC2 instances on port 3306 for MySQL or 5432 for PostgreSQL
+  ingress {
+    from_port       = var.database_port
+    to_port         = var.database_port
+    protocol        = "tcp"
+    security_groups = [aws_security_group.application_sg.id] # Allow access only from EC2 instance
   }
 
-  filter {
-    name   = "state"
-    values = ["available"]
+  # Egress rule to allow all outbound traffic
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "db-security-group"
   }
 }
