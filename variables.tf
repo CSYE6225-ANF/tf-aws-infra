@@ -41,11 +41,27 @@ variable "custom_ami_id" {
 
 variable "instance_type" {
   description = "Instance type"
-  default     = "t2.medium"
+  default     = "t2.micro"
 }
 
 variable "key_pair_name" {
   description = "The name of the key pair to access the EC2 instance"
   type        = string
   default     = "keypair"
+}
+
+variable "database_port" {
+  description = "Port on which the database runs"
+  type        = number
+  default     = 5432
+}
+
+variable "db_username" {
+  description = "Database username"
+  type        = string
+}
+
+variable "db_password" {
+  description = "Database password"
+  type        = string
 }
