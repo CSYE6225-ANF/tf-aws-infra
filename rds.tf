@@ -1,32 +1,39 @@
-resource "aws_instance" "web_app_instance" {
-  ami                         = var.custom_ami_id
-  instance_type               = var.instance_type
-  key_name                    = var.key_pair_name
-  vpc_security_group_ids      = [aws_security_group.application_sg.id]
-  subnet_id                   = aws_subnet.public_subnets[0].id
-  associate_public_ip_address = true
-
-  user_data = <<-EOF
-              #!/bin/bash
-              # Create .env file in the application directory
-              touch /home/csye6225/.env
-              echo "NODE_ENV=production" >> /home/csye6225/.env
-              echo "DB_HOST=$(echo ${aws_db_instance.csye6225_rds_instance.endpoint} | cut -d ':' -f 1)" >> /home/csye6225/.env
-              echo "DB_PORT=5432" >> /home/csye6225/.env
-              echo "DB_USER=${var.db_username}" >> /home/csye6225/.env
-              echo "DB_PASSWORD=${var.db_password}" >> /home/csye6225/.env
-              echo "DB_NAME=csye6225" >> /home/csye6225/.env
-              EOF
-
-  root_block_device {
-    volume_size           = 25
-    volume_type           = "gp2"
-    delete_on_termination = true
-  }
-
-  disable_api_termination = false # Allows termination via API
+resource "aws_db_parameter_group" "db_parameter_group" {
+  name        = "custom-db-parameter-group"
+  family      = "postgres14"
+  description = "Custom parameter group for the RDS instance"
 
   tags = {
-    Name = "web-app-instance"
+    Name = "csye6225-db-parameter-group"
+  }
+}
+
+resource "aws_db_instance" "csye6225_rds_instance" {
+  identifier             = "csye6225"
+  engine                 = "postgres"
+  engine_version         = 14.13
+  instance_class         = "db.t3.micro"
+  allocated_storage      = 20
+  db_name                = "csye6225"
+  username               = var.db_username
+  password               = var.db_password
+  db_subnet_group_name   = aws_db_subnet_group.csye6225_db_subnet_group.name
+  vpc_security_group_ids = [aws_security_group.db_security_group.id]
+  multi_az               = false
+  publicly_accessible    = false
+  parameter_group_name   = aws_db_parameter_group.db_parameter_group.name
+  skip_final_snapshot    = true
+
+  tags = {
+    Name = "csye6225-db-instance"
+  }
+}
+
+resource "aws_db_subnet_group" "csye6225_db_subnet_group" {
+  name       = "csye6225-db-subnet-group"
+  subnet_ids = aws_subnet.private_subnets[*].id
+
+  tags = {
+    Name = "csye6225-db-subnet-group"
   }
 }
