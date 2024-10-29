@@ -65,3 +65,29 @@ variable "db_password" {
   description = "Database password"
   type        = string
 }
+
+variable "zone_id" {
+  description = "Hosted Zone ID"
+  type        = string
+}
+
+variable "subdomain_name" {
+  description = "Subdomain Name"
+  type        = string
+}
+
+# variable "domain_name" {
+#   description = "Subdomain Name"
+#   type        = string
+#   default     = "anfcsye6225.me"
+# }
+
+variable "app_port" {
+  type    = number
+  default = 8080 # or 80
+}
+
+variable "aws_account_id" {
+  type    = number
+  default = 8080 # or 80
+}
