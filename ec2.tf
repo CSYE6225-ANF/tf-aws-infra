@@ -122,6 +122,9 @@ resource "aws_instance" "web_app_instance" {
                  -c file:/home/csye6225/cloudwatch-config.json \
                  -s
 
+             # Start the amazon cloudwatch service
+             sudo systemctl start amazon-cloudwatch-agent
+
              # Reload systemd to recognize the new service
              sudo systemctl daemon-reload
 
