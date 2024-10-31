@@ -57,7 +57,7 @@ resource "aws_iam_policy" "cloudwatch_agent_policy" {
           "logs:DescribeLogStreams",
         ],
         Resource = "arn:aws:logs:*:*:*"
-      },{
+        }, {
         Effect = "Allow",
         Action = [
           "cloudwatch:PutMetricData"
