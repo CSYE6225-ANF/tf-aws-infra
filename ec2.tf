@@ -51,17 +51,23 @@ resource "aws_iam_policy" "cloudwatch_agent_policy" {
       {
         Effect = "Allow",
         Action = [
-          "cloudwatch:PutMetricData",
           "logs:CreateLogGroup",
           "logs:CreateLogStream",
           "logs:PutLogEvents",
-          "logs:DescribeLogStreams"
+          "logs:DescribeLogStreams",
+        ],
+        Resource = "arn:aws:logs:*:*:*"
+      },{
+        Effect = "Allow",
+        Action = [
+          "cloudwatch:PutMetricData"
         ],
         Resource = "*"
-      }
+      },
     ]
   })
 }
+
 
 # Attach both policies to the role
 resource "aws_iam_role_policy_attachment" "s3_access_policy_attachment" {
@@ -101,9 +107,20 @@ resource "aws_instance" "web_app_instance" {
              echo "DB_USER=${var.db_username}" >> /home/csye6225/.env
              echo "DB_PASSWORD=${var.db_password}" >> /home/csye6225/.env
              echo "DB_NAME=csye6225" >> /home/csye6225/.env
-             echo "AWS_REGION=${var.region}" >> /home/csye622/.env
+             echo "AWS_REGION=${var.region}" >> /home/csye6225/.env
              echo "APP_PORT=${var.app_port}" >> /home/csye6225/.env
              echo "S3_BUCKET_NAME=${aws_s3_bucket.csye6225_bucket.bucket}" >> /home/csye6225/.env
+
+             sudo apt update -y
+
+             sudo apt install -y amazon-cloudwatch-agent
+
+             # Configure and start the CloudWatch agent
+             sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
+                 -a fetch-config \
+                 -m ec2 \
+                 -c file:/home/csye6225/cloudwatch-config.json \
+                 -s
 
              # Reload systemd to recognize the new service
              sudo systemctl daemon-reload
@@ -116,13 +133,6 @@ resource "aws_instance" "web_app_instance" {
 
              # Check the status of the service
              sudo systemctl status webapp.service --no-pager
-
-             # Configure and start the CloudWatch agent
-             sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
-                 -a fetch-config \
-                 -m ec2 \
-                 -c file:/home/csye6225/cloudwatch-config.json \
-                 -s
 
              echo "Web application and CloudWatch agent setup complete."
              EOF
