@@ -265,7 +265,7 @@ resource "aws_cloudwatch_metric_alarm" "cpu_utilization_high" {
   namespace           = "AWS/EC2"
   period              = 60
   statistic           = "Average"
-  threshold           = 12 # Set threshold to 75% CPU utilization
+  threshold           = 12 # Set threshold to 12% CPU utilization
   alarm_actions       = [aws_autoscaling_policy.scale_up_policy.arn]
   ok_actions          = [aws_autoscaling_policy.scale_down_policy.arn]
   dimensions = {
@@ -282,7 +282,7 @@ resource "aws_cloudwatch_metric_alarm" "cpu_utilization_low" {
   namespace           = "AWS/EC2"
   period              = 60
   statistic           = "Average"
-  threshold           = 8 # Set threshold to 20% CPU utilization
+  threshold           = 8 # Set threshold to 8% CPU utilization
   alarm_actions       = [aws_autoscaling_policy.scale_down_policy.arn]
   ok_actions          = [aws_autoscaling_policy.scale_up_policy.arn]
   dimensions = {
