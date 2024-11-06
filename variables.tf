@@ -88,5 +88,5 @@ variable "app_port" {
 }
 
 variable "aws_account_id" {
-  type    = number
+  type = number
 }
