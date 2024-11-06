@@ -88,6 +88,5 @@ variable "app_port" {
 }
 
 variable "aws_account_id" {
-  type    = number
-  default = 8080 # or 80
+  type = number
 }
