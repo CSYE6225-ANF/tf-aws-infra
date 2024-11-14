@@ -90,3 +90,14 @@ variable "app_port" {
 variable "aws_account_id" {
   type = number
 }
+
+variable "DOMAIN" {
+  description = "Mailgun DOMAIN"
+  type        = string
+  default     = "anfcsye6225.me"
+}
+
+variable "MAILGUN_API_KEY" {
+  description = "Mailgun API key"
+  type        = string
+}
