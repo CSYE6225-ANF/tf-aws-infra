@@ -1,4 +1,9 @@
-# Define IAM role for S3 access and CloudWatch
+# Define SNS Topic
+resource "aws_sns_topic" "my_topic" {
+  name = "csye6225_sns_topic"
+}
+
+# Define IAM role for S3 access, CloudWatch, and SNS publish
 resource "aws_iam_role" "s3_and_cloudwatch_role" {
   name = "S3AndCloudWatchRole"
 
@@ -68,16 +73,86 @@ resource "aws_iam_policy" "cloudwatch_agent_policy" {
   })
 }
 
+# Define IAM policy for SNS publish access
+resource "aws_iam_policy" "sns_publish_policy" {
+  name        = "SNSPublishPolicy"
+  description = "Policy to allow publishing messages to the SNS topic"
 
-# Attach both policies to the role
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "sns:Publish"
+        ],
+        Resource = aws_sns_topic.my_topic.arn
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role" "lambda_execution_role" {
+  name = "LambdaExecutionRole"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        },
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+# Policy to allow Lambda function to log to CloudWatch
+resource "aws_iam_policy" "lambda_logging_policy" {
+  name        = "LambdaLoggingPolicy"
+  description = "Policy for Lambda function to log to CloudWatch"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ],
+        Resource = "arn:aws:logs:*:*:*"
+      }
+    ]
+  })
+}
+
+# Attach the logging policy to the Lambda execution role
+resource "aws_iam_role_policy_attachment" "lambda_logging_policy_attachment" {
+  role       = aws_iam_role.lambda_execution_role.name
+  policy_arn = aws_iam_policy.lambda_logging_policy.arn
+}
+
+
+# Attach S3 access policy to the role
 resource "aws_iam_role_policy_attachment" "s3_access_policy_attachment" {
   role       = aws_iam_role.s3_and_cloudwatch_role.name
   policy_arn = aws_iam_policy.s3_access_policy.arn
 }
 
+# Attach CloudWatch agent policy to the role
 resource "aws_iam_role_policy_attachment" "cloudwatch_agent_policy_attachment" {
   role       = aws_iam_role.s3_and_cloudwatch_role.name
   policy_arn = aws_iam_policy.cloudwatch_agent_policy.arn
+}
+
+# Attach SNS publish policy to the role
+resource "aws_iam_role_policy_attachment" "sns_publish_policy_attachment" {
+  role       = aws_iam_role.s3_and_cloudwatch_role.name
+  policy_arn = aws_iam_policy.sns_publish_policy.arn
 }
 
 # Create an instance profile for the combined role
@@ -85,6 +160,47 @@ resource "aws_iam_instance_profile" "s3_and_cloudwatch_instance_profile" {
   name = "S3AndCloudWatchInstanceProfile"
   role = aws_iam_role.s3_and_cloudwatch_role.name
 }
+
+resource "aws_lambda_function" "sns_lambda_function" {
+  function_name = "SNSLambdaFunction"
+  role          = aws_iam_role.lambda_execution_role.arn
+  handler       = "app.handler" # Update based on the actual handler in your Lambda code
+  runtime       = "nodejs20.x"  # Update to the runtime your Lambda code uses
+
+  # Source of the Lambda code
+  filename         = "serverless.zip"
+  source_code_hash = filebase64sha256("serverless.zip")
+
+  environment {
+    variables = {
+      SNS_TOPIC_ARN   = aws_sns_topic.my_topic.arn
+      DOMAIN          = var.subdomain_name #"anfcsye6225.me"
+      MAILGUN_API_KEY = var.MAILGUN_API_KEY
+      DB_HOST         = aws_db_instance.csye6225_rds_instance.address
+      DB_PORT         = 5432
+      DB_USER         = var.db_username
+      DB_PASSWORD     = var.db_password
+      DB_NAME         = "csye6225"
+      DB_DIALECT      = "postgres"
+    }
+  }
+}
+
+resource "aws_sns_topic_subscription" "lambda_sns_subscription" {
+  topic_arn = aws_sns_topic.my_topic.arn
+  protocol  = "lambda"
+  endpoint  = aws_lambda_function.sns_lambda_function.arn
+}
+
+# Allow SNS to invoke the Lambda function
+resource "aws_lambda_permission" "allow_sns_invoke_lambda" {
+  statement_id  = "AllowSNSToInvokeLambda"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.sns_lambda_function.function_name
+  principal     = "sns.amazonaws.com"
+  source_arn    = aws_sns_topic.my_topic.arn
+}
+
 
 # Launch Template for Auto Scaling Group
 resource "aws_launch_template" "csye6225_launch_template" {
@@ -113,8 +229,12 @@ resource "aws_launch_template" "csye6225_launch_template" {
     echo "AWS_REGION=${var.region}" >> /home/csye6225/.env
     echo "APP_PORT=${var.app_port}" >> /home/csye6225/.env
     echo "S3_BUCKET_NAME=${aws_s3_bucket.csye6225_bucket.bucket}" >> /home/csye6225/.env
+    echo "SNS_TOPIC_ARN=${aws_sns_topic.my_topic.arn}" >> /home/csye6225/.env
 
     sudo apt update -y
+
+    # Install the required AWS SDK package
+    npm install @aws-sdk/client-sns
 
     sudo apt install -y amazon-cloudwatch-agent
 
@@ -144,7 +264,6 @@ resource "aws_launch_template" "csye6225_launch_template" {
     EOF
   )
 
-  # Root block device configuration
   block_device_mappings {
     device_name = "/dev/xvda"
     ebs {
@@ -159,7 +278,6 @@ resource "aws_launch_template" "csye6225_launch_template" {
   tags = {
     Name = "web-app-instance"
   }
-
 
 }
 
