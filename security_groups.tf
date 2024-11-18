@@ -11,7 +11,6 @@ resource "aws_security_group" "load_balancer_sg" {
     protocol         = "tcp"
     cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
-
   }
 
   # Allow incoming HTTPS traffic from anywhere
