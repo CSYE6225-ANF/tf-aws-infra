@@ -114,3 +114,37 @@ aws_account_id       = <aws_account_id>
 DOMAIN               = "<domain_name>"
 MAILGUN_API_KEY      = "<mailgun_api_key>"
 ```
+
+## Assignmetnt 9
+
+`terraform.tfvars` 
+```
+region               = "us-east-1"
+vpc_cidr             = "10.0.0.0/16"                                       # CIDR block for the VPC
+public_subnet_cidrs  = ["10.0.0.0/20", "10.0.16.0/20", "10.0.32.0/20"]     # CIDR blocks for the public subnets
+private_subnet_cidrs = ["10.0.128.0/20", "10.0.144.0/20", "10.0.160.0/20"] # CIDR blocks for the private subnets
+availability_zones   = ["us-east-1a", "us-east-1b", "us-east-1c"]
+instance_type        = "t2.micro"
+custom_ami_id        = "ami-0ca2b2f5618ba7cc7"
+key_pair_name        = "keypair"
+application_port     = 8080
+database_port        = 5432
+db_username          = "csye6225"
+db_password          = "csye6225"
+zone_id              = "<zone_id>"
+subdomain_name       = "<subdomain_name>"
+aws_account_id       = <aws_account_id>
+DOMAIN               = "<domain_name>"
+MAILGUN_API_KEY      = "<mailgun_api_key>"
+ssl_certificate_arn  = "<ssl_certificate_arn>"
+```
+
+Command to import the certificate:
+Reference: https://www.namecheap.com/support/knowledgebase/article.aspx/9592/2290/generating-a-csr-on-amazon-web-services-aws/
+
+1.  Generate the key: ```sudo openssl genrsa -out private.key 2048```
+2.  Create CSR: ```sudo openssl req -new -key private.key -out csr.pem```
+3.  See the CSR: ```cat csr.pem```
+4.  See the Private Key: ```sudo cat private.key```
+5.  Download the SLL Details from namecheap SSL Certificates
+6.  Add the SSL Certificate to AWS Certificate Manager
