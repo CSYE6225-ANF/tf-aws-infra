@@ -101,3 +101,8 @@ variable "MAILGUN_API_KEY" {
   description = "Mailgun API key"
   type        = string
 }
+
+variable "ssl_certificate_arn" {
+  description = "ARN of the imported SSL certificate"
+  type        = string
+}
