@@ -175,15 +175,15 @@ resource "aws_lambda_function" "sns_lambda_function" {
 
   environment {
     variables = {
-      SNS_TOPIC_ARN   = aws_sns_topic.my_topic.arn
+      SNS_TOPIC_ARN = aws_sns_topic.my_topic.arn
       # DOMAIN          = var.subdomain_name #"anfcsye6225.me"
       # MAILGUN_API_KEY = var.MAILGUN_API_KEY
-      DB_HOST         = aws_db_instance.csye6225_rds_instance.address
-      DB_PORT         = 5432
-      DB_USER         = var.db_username
-      DB_PASSWORD     = var.db_password
-      DB_NAME         = "csye6225"
-      DB_DIALECT      = "postgres"
+      DB_HOST     = aws_db_instance.csye6225_rds_instance.address
+      DB_PORT     = 5432
+      DB_USER     = var.db_username
+      DB_PASSWORD = var.db_password
+      DB_NAME     = "csye6225"
+      DB_DIALECT  = "postgres"
     }
   }
 }
@@ -281,7 +281,7 @@ resource "aws_launch_template" "csye6225_launch_template" {
       volume_type           = "gp2"
       delete_on_termination = true
       encrypted             = true
-      kms_key_id            = "${aws_kms_key.ec2_key.arn}"
+      kms_key_id            = aws_kms_key.ec2_key.arn
     }
   }
 
@@ -382,10 +382,10 @@ resource "aws_lb_target_group" "app_target_group" {
 # Listener for Load Balancer
 resource "aws_lb_listener" "app_listener" {
   load_balancer_arn = aws_lb.app_load_balancer.arn
-  port              = 443#80
+  port              = 443 #80
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-2016-08"
-  certificate_arn   = var.ssl_certificate_arn  # Imported SSL certificate ARN
+  certificate_arn   = var.ssl_certificate_arn # Imported SSL certificate ARN
 
   default_action {
     type             = "forward"
@@ -438,8 +438,8 @@ resource "aws_kms_key" "ec2_key" {
   enable_key_rotation      = true
 
   tags = {
-    Name        = "KMS-EC2-Key"
-    Project     = "CSYE6225"
+    Name    = "KMS-EC2-Key"
+    Project = "CSYE6225"
   }
 }
 
@@ -450,8 +450,8 @@ resource "aws_kms_key" "rds_key" {
   enable_key_rotation      = true
 
   tags = {
-    Name        = "KMS-RDS-Key"
-    Project     = "CSYE6225"
+    Name    = "KMS-RDS-Key"
+    Project = "CSYE6225"
   }
 }
 
@@ -462,8 +462,8 @@ resource "aws_kms_key" "s3_key" {
   enable_key_rotation      = true
 
   tags = {
-    Name        = "KMS-S3-Key"
-    Project     = "CSYE6225"
+    Name    = "KMS-S3-Key"
+    Project = "CSYE6225"
   }
 }
 
@@ -474,8 +474,8 @@ resource "aws_kms_key" "secrets_key" {
   enable_key_rotation      = true
 
   tags = {
-    Name        = "KMS-Secrets-Key"
-    Project     = "CSYE6225"
+    Name    = "KMS-Secrets-Key"
+    Project = "CSYE6225"
   }
 }
 
@@ -508,26 +508,26 @@ resource "aws_kms_key_policy" "lambda_kms_policy" {
     Statement = [
       # Grant permissions to the root account for full key management
       {
-        Sid       = "EnableRootPermissions",
-        Effect    = "Allow",
+        Sid    = "EnableRootPermissions",
+        Effect = "Allow",
         Principal = {
           AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
         },
-        Action    = "kms:*",
-        Resource  = "*"
+        Action   = "kms:*",
+        Resource = "*"
       },
       # Grant permissions to the Lambda execution role
       {
-        Sid       = "AllowLambdaAccess",
-        Effect    = "Allow",
+        Sid    = "AllowLambdaAccess",
+        Effect = "Allow",
         Principal = {
           AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/LambdaExecutionRole"
         },
-        Action    = [
+        Action = [
           "kms:Decrypt",
           "kms:GenerateDataKey"
         ],
-        Resource  = "*"
+        Resource = "*"
       }
     ]
   })
@@ -547,13 +547,13 @@ resource "aws_secretsmanager_secret" "db_credentials" {
   kms_key_id = aws_kms_key.secrets_key.arn
 
   tags = {
-    Name        = "DB-Credentials"
-    Project     = "CSYE6225"
+    Name    = "DB-Credentials"
+    Project = "CSYE6225"
   }
 }
 
 resource "aws_secretsmanager_secret_version" "db_credentials_version" {
-  secret_id     = aws_secretsmanager_secret.db_credentials.id
+  secret_id = aws_secretsmanager_secret.db_credentials.id
   secret_string = jsonencode({
     username = var.db_username
     password = random_password.db_password.result
@@ -565,13 +565,13 @@ resource "aws_secretsmanager_secret" "email_credentials" {
   kms_key_id = aws_kms_key.secrets_key.arn
 
   tags = {
-    Name        = "Email-Credentials"
-    Project     = "CSYE6225"
+    Name    = "Email-Credentials"
+    Project = "CSYE6225"
   }
 }
 
 resource "aws_secretsmanager_secret_version" "email_credentials_version" {
-  secret_id     = aws_secretsmanager_secret.email_credentials.id
+  secret_id = aws_secretsmanager_secret.email_credentials.id
   secret_string = jsonencode({
     api_key = var.MAILGUN_API_KEY
     domain  = var.subdomain_name
@@ -602,15 +602,15 @@ resource "aws_iam_policy" "lambda_secrets_access_policy" {
     Version = "2012-10-17",
     Statement = [
       {
-        Effect   = "Allow",
-        Action   = [
+        Effect = "Allow",
+        Action = [
           "secretsmanager:GetSecretValue"
         ],
         Resource = aws_secretsmanager_secret.email_credentials.arn
       },
       {
-        Effect   = "Allow",
-        Action   = [
+        Effect = "Allow",
+        Action = [
           "kms:Decrypt"
         ],
         Resource = aws_kms_key.secrets_key.arn
@@ -633,12 +633,12 @@ resource "aws_iam_policy" "s3_and_cloudwatch_kms_policy" {
     Version = "2012-10-17",
     Statement = [
       {
-        Effect   = "Allow",
-        Action   = [
+        Effect = "Allow",
+        Action = [
           "kms:GenerateDataKey",
           "kms:Decrypt"
         ],
-        Resource = aws_kms_key.s3_key.arn  # Use the correct KMS key ARN
+        Resource = aws_kms_key.s3_key.arn # Use the correct KMS key ARN
       }
     ]
   })
@@ -657,26 +657,26 @@ resource "aws_kms_key_policy" "s3_key_policy" {
     Statement = [
       # Grant root account full permissions
       {
-        Sid       = "EnableRootPermissions",
-        Effect    = "Allow",
+        Sid    = "EnableRootPermissions",
+        Effect = "Allow",
         Principal = {
           AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
         },
-        Action    = "kms:*",
-        Resource  = "*"
+        Action   = "kms:*",
+        Resource = "*"
       },
       # Grant S3AndCloudWatchRole permissions
       {
-        Sid       = "AllowS3AndCloudWatchRole",
-        Effect    = "Allow",
+        Sid    = "AllowS3AndCloudWatchRole",
+        Effect = "Allow",
         Principal = {
           AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/S3AndCloudWatchRole"
         },
-        Action    = [
+        Action = [
           "kms:GenerateDataKey",
           "kms:Decrypt"
         ],
-        Resource  = "*"
+        Resource = "*"
       }
     ]
   })
@@ -690,8 +690,8 @@ resource "aws_iam_policy" "ec2_kms_policy" {
     Version = "2012-10-17",
     Statement = [
       {
-        Effect   = "Allow",
-        Action   = [
+        Effect = "Allow",
+        Action = [
           "kms:Encrypt",
           "kms:Decrypt",
           "kms:ReEncrypt*",
@@ -717,35 +717,35 @@ resource "aws_kms_key_policy" "ec2_key_policy" {
     Version = "2012-10-17",
     Statement = [
       {
-        Sid       = "EnableRootPermissions",
-        Effect    = "Allow",
+        Sid    = "EnableRootPermissions",
+        Effect = "Allow",
         Principal = {
           AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
         },
-        Action    = "kms:*",
-        Resource  = aws_kms_key.ec2_key.arn
+        Action   = "kms:*",
+        Resource = aws_kms_key.ec2_key.arn
       },
       {
-        Sid       = "AllowEC2RoleAccess",
-        Effect    = "Allow",
+        Sid    = "AllowEC2RoleAccess",
+        Effect = "Allow",
         Principal = {
           AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${aws_iam_role.s3_and_cloudwatch_role.name}"
         },
-        Action    = [
+        Action = [
           "kms:Decrypt",
           "kms:GenerateDataKey",
           "kms:DescribeKey",
           "kms:CreateGrant"
         ],
-        Resource  = aws_kms_key.ec2_key.arn
+        Resource = aws_kms_key.ec2_key.arn
       },
       {
-        Sid       = "AllowServiceLinkedRoleUseOfKey",
-        Effect    = "Allow",
+        Sid    = "AllowServiceLinkedRoleUseOfKey",
+        Effect = "Allow",
         Principal = {
           AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling"
         },
-        Action    = [
+        Action = [
           "kms:Encrypt",
           "kms:Decrypt",
           "kms:ReEncrypt*",
@@ -753,7 +753,7 @@ resource "aws_kms_key_policy" "ec2_key_policy" {
           "kms:DescribeKey",
           "kms:CreateGrant"
         ],
-        Resource  = aws_kms_key.ec2_key.arn
+        Resource = aws_kms_key.ec2_key.arn
       }
     ]
   })
