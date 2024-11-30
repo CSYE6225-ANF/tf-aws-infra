@@ -8,6 +8,7 @@ resource "aws_db_parameter_group" "db_parameter_group" {
   }
 }
 
+# Apply KMS key to RDS
 resource "aws_db_instance" "csye6225_rds_instance" {
   identifier             = "csye6225"
   engine                 = "postgres"
@@ -23,6 +24,8 @@ resource "aws_db_instance" "csye6225_rds_instance" {
   publicly_accessible    = false
   parameter_group_name   = aws_db_parameter_group.db_parameter_group.name
   skip_final_snapshot    = true
+  kms_key_id             = aws_kms_key.rds_key.arn
+  storage_encrypted      = true
 
   tags = {
     Name = "csye6225-db-instance"
