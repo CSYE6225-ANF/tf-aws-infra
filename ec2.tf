@@ -172,6 +172,7 @@ resource "aws_lambda_function" "sns_lambda_function" {
   # Source of the Lambda code
   filename         = "serverless.zip"
   source_code_hash = filebase64sha256("serverless.zip")
+  timeout          = 30
 
   environment {
     variables = {
@@ -436,6 +437,7 @@ resource "aws_kms_key" "ec2_key" {
   key_usage                = "ENCRYPT_DECRYPT"
   customer_master_key_spec = "SYMMETRIC_DEFAULT"
   enable_key_rotation      = true
+  rotation_period_in_days  = 90
 
   tags = {
     Name    = "KMS-EC2-Key"
@@ -448,6 +450,7 @@ resource "aws_kms_key" "rds_key" {
   key_usage                = "ENCRYPT_DECRYPT"
   customer_master_key_spec = "SYMMETRIC_DEFAULT"
   enable_key_rotation      = true
+  rotation_period_in_days  = 90
 
   tags = {
     Name    = "KMS-RDS-Key"
@@ -460,6 +463,7 @@ resource "aws_kms_key" "s3_key" {
   key_usage                = "ENCRYPT_DECRYPT"
   customer_master_key_spec = "SYMMETRIC_DEFAULT"
   enable_key_rotation      = true
+  rotation_period_in_days  = 90
 
   tags = {
     Name    = "KMS-S3-Key"
@@ -472,6 +476,7 @@ resource "aws_kms_key" "secrets_key" {
   key_usage                = "ENCRYPT_DECRYPT"
   customer_master_key_spec = "SYMMETRIC_DEFAULT"
   enable_key_rotation      = true
+  rotation_period_in_days  = 90
 
   tags = {
     Name    = "KMS-Secrets-Key"
