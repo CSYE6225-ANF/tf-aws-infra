@@ -148,3 +148,10 @@ Reference: https://www.namecheap.com/support/knowledgebase/article.aspx/9592/229
 4.  See the Private Key: ```sudo cat private.key```
 5.  Download the SLL Details from namecheap SSL Certificates
 6.  Add the SSL Certificate to AWS Certificate Manager
+
+```
+aws acm import-certificate 
+    --certificate file://Certificate.pem 
+    --certificate-chain file://CertificateChain.pem 
+    --private-key file://PrivateKey.pem
+```
