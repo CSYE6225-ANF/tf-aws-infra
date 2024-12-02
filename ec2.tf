@@ -172,6 +172,7 @@ resource "aws_lambda_function" "sns_lambda_function" {
   # Source of the Lambda code
   filename         = "serverless.zip"
   source_code_hash = filebase64sha256("serverless.zip")
+  timeout          = 30
 
   environment {
     variables = {
